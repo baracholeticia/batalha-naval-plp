@@ -1,0 +1,21 @@
+{
+  "name": "batalha-naval-plp",
+  "version": "1.0.0",
+  "description": "Projeto acadêmico da disciplina Paradigmas de Linguagens de Programação para desenvolvimento do jogo Batalha Naval em JavaScript, com regras completas, persistência de jogadores, ranking, modo campanha com três níveis de IA, modo dinâmico e sistema de medalhas.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Yasmiinmuniz/batalha-naval-plp.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Yasmiinmuniz/batalha-naval-plp/issues"
+  },
+  "homepage": "https://github.com/Yasmiinmuniz/batalha-naval-plp#readme"
+}
