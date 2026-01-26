@@ -1,7 +1,3 @@
-Segue o **texto completo da arquitetura**, em **versão objetiva, concisa e acadêmica**, pronta para uso direto no `docs/arquitetura.md`, sem excesso de detalhes.
-
----
-
 # Arquitetura do Projeto – Batalha Naval
 
 ## Visão Geral
