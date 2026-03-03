@@ -1,6 +1,7 @@
-const Player = require('./Player');
-const Board = require('./Board');
-const Ship = require('./Ship');
+import Board from './Board.js';
+import Ship from './Ship.js';
+
+import { randomUUID } from 'crypto';
 
 const GameState = {
   SETUP_PLAYER_1: 'setup_player_1',
@@ -9,12 +10,12 @@ const GameState = {
   GAME_OVER: 'game_over'
 };
 
-class GameEngine {
+export default class GameEngine {
   constructor(options = {}) {
-    this.mode = options.mode || 'PVP';
+    this.mode = options.mode || 'PVP'; // 'PVP' ou 'IA']
+    this.gameMode = options.gameMode || 'classic'; // 'classic', 'dynamic' ou 'campaign'
     this.callbacks = options.callbacks || {};
 
-    // player
     this.players = [
       new Player(1, 'Player 1', 'human'),
       (this.mode === 'IA') 
@@ -31,6 +32,8 @@ class GameEngine {
     // tipos de navio
     this.shipTemplate = options.shipTemplate || [
       { type: 'porta-aviao', size: 6 },
+      { type: 'porta-aviao', size: 6 },
+      { type: 'guerra', size: 4 },
       { type: 'guerra', size: 4 },
       { type: 'encouracado', size: 3 },
       { type: 'submarine', size: 1 },
@@ -67,6 +70,11 @@ class GameEngine {
     this._trigger('onUpdate', this.getPublicState());
   }
 
+  _invalidPlacement(reason, detail) {
+    this._trigger('onInvalidPlacement', { reason, detail });
+    return { success: false, reason, detail };
+  }
+
   placeShipForCurrentPlayer(shipType, row, col, orientation = 'horizontal') {
     const player = this.players[this.currentPlayerIndex];
     const playerId = player.id;
@@ -77,22 +85,19 @@ class GameEngine {
     
     desiredIndex = remaining.findIndex(s => s.size === shipType);
     
-    typeof shipType === 'string' 
+    if (typeof shipType === 'string') {
       desiredIndex = remaining.findIndex(s => s.type === shipType);
-
+    }
     if (desiredIndex === -1) {
       return this._invalidPlacement('ship-not-available', { detail: { shipType } });
     }
 
     const shipDef = remaining[desiredIndex];
-    const ship = new Ship(shipDef.type, shipDef.size);
+    const shipId = `${shipDef.type}-${randomUUID()}`;
+    const ship = new Ship(shipId, shipDef.type, shipDef.size);
     orientation = orientation === 'vertical' ? 'vertical' : 'horizontal';
 
-    // limites tabuleiro
-    if (row < 0 || row > 9 || col < 0 || col > 9) {
-      return this._invalidPlacement('out-of-bounds', { detail: { row, col } });
-    }
-
+    
     // valida posição do navio
     const board = player.board;
     if (!board.isValidPlacement(ship, row, col, orientation)) {
@@ -110,7 +115,7 @@ class GameEngine {
     remaining.splice(desiredIndex, 1);
 
     // notificar posicionamento bem-sucedido
-    this._trigger('onShipPlaced', { playerId, ship: { type: ship.type, size: ship.size }, row, col, orientation });
+    this._trigger('onShipPlaced', { playerId, ship: { id: ship.id, type: ship.type, size: ship.size }, row, col, orientation });
 
     // verifica se todos os navios foram posicionados
     if (remaining.length === 0) {
@@ -120,13 +125,9 @@ class GameEngine {
       this._triggerUpdate();
     }
 
-    return { success: true, ship: { type: ship.type, size: ship.size } };
+    return { success: true, ship: { id: ship.id, type: ship.type, size: ship.size } };
   }
-
-  _invalidPlacement(reason, detail) {
-    this._trigger('onInvalidPlacement', { reason, detail });
-    return { success: false, reason, detail };
-  }
+  
 
   _advanceSetupOrStart() {
     // avança estado de setup ou inicia jogo
@@ -164,7 +165,39 @@ class GameEngine {
     return this.players[1 - this.currentPlayerIndex];
   }
 
+  //método para movimentar navios (modo dinamico)
+  moveShip(shipId, direction) {
+    if (this.gameMode !== 'dynamic') {
+        return { success: false, reason: 'invalid-mode', detail: "Movimentação só permitida no modo dinâmico" };
+    } 
+
+    if(this.state !== GameState.PLAYING){
+        return { success: false, reason: 'not-playing', detail: "O jogo não está em andamento" };
+    }
+    const player = this.getCurrentPlayer();
+    
+    if(player.hasMovedThisTurn){
+        return { success: false, reason: 'already-moved', detail: "O jogador já movimentou um navio neste turno" };
+    }
+    const ship = player.board.ships.find(s => s.id === shipId);
+    if(!ship){
+        return { success: false, reason: 'ship-not-found', detail: "Navio não encontrado." };
+    }
+    try {
+        player.board.moveShip(ship, direction);
+        player.hasMovedThisTurn = true;
+        this._triggerUpdate();
+        return { success: true, shipId, direction };
+    } catch (err) {
+        return { success: false, reason: 'move-error', detail: err.message };
+    }
+  }
+
   attack(row, col) {
+    if (this.state !== GameState.PLAYING) {
+      throw new Error("O jogo não está em andamento.");
+    }
+
     const player = this.getCurrentPlayer();
     const opponent = this.getOpponentPlayer();
 
@@ -193,26 +226,42 @@ class GameEngine {
     if (wasMiss) {
       this._switchTurn();
     } 
+    else {
+      player.hasMovedThisTurn = false; //reseta a movimentação para o próximo turno
+    }
+
     this._triggerUpdate();
     return { result, nextPlayer: this.getCurrentPlayer() };
   }
 
   _switchTurn() {
     this.currentPlayerIndex = 1 - this.currentPlayerIndex;
+    this.getCurrentPlayer().hasMovedThisTurn = false; //reseta a movimentação para o próximo turno
   }
 
   // comunicação com a UI
   getPublicState() {
     return {
       state: this.state,
+      gameMode: this.gameMode,
       currentPlayerId: this.getCurrentPlayer().id,
       players: this.players.map(p => ({
         id: p.id,
         name: p.name,
         type: p.type,
+        hasMovedThisTurn: p.hasMovedThisTurn,
         // para a UI do dono, mostrar posições dos seus navios.
-        shipsRemainingToPlace: this.remainingToPlace[p.id].map(s => ({ type: s.type, size: s.size })),
-        shipsCount: p.board.ships.length,
+        shipsRemainingToPlace: this.remainingToPlace[p.id].map(s => ({type: s.type, size: s.size })),
+        ships: p.board.ships.map(s => ({
+          id: s.id,
+          type: s.type,
+          size: s.size,
+          row: s.row,
+          col: s.col,
+          orientation: s.orientation,
+          hits: s.hits,
+          sunk: s.sunk
+        })),
         attacks: p.board.attacks.slice()
       }))
     };
@@ -224,6 +273,7 @@ class GameEngine {
     this.players.forEach(p => {
       const b = new Board();
       p.setBoard(b);
+      p.hasMovedThisTurn = false;
       this.remainingToPlace[p.id] = this.shipTemplate.map(s => ({ ...s }));
     });
     this.state = GameState.SETUP_PLAYER_1;
@@ -231,5 +281,3 @@ class GameEngine {
     this._triggerUpdate();
   }
 }
-
-module.exports = GameEngine;
