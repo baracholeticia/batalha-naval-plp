@@ -1,117 +1,273 @@
-.game-screen {
+.game-layout {
+  display: flex;
+  flex-direction: column;
   min-height: 100vh;
-  background-color: #f8f9fa; /* Fundo geral off-white */
-  font-family: 'Inter', sans-serif;
-  color: #333;
 }
 
-/* --- HEADER --- */
-.game-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 40px;
-  border-bottom: 2px solid #e5e7eb;
-  background-color: #ffffff;
-}
-
-.logo-section {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.logo-text {
-  font-size: 24px;
-  font-weight: 900;
-  margin: 0;
-  letter-spacing: 1px;
-}
-
-.credits {
-  font-size: 12px;
-  color: #6b7280;
-  font-weight: 600;
-}
-
-/* --- LAYOUT PRINCIPAL --- */
-.boards-layout {
+.game-content {
+  flex: 1;
+  flex-direction: column;
   display: flex;
   justify-content: center;
-  gap: 80px;
+  align-items: center;
   padding: 40px;
 }
 
-.side-container {
+.boards-container {
   display: flex;
-  flex-direction: column;
-  align-items: center;
+  flex-direction: row; /* GARANTE que fiquem lado a lado */
+  justify-content: center;
+  align-items: flex-start;
+  gap: 80px; 
+  width: 100%;
+  max-width: 1200px;
 }
 
-/* --- SELOS (Badges) --- */
-.badge {
-  width: 100%;
-  padding: 12px 0;
-  text-align: center;
-  border-radius: 8px;
-  font-weight: 800;
-  color: #ffffff;
-  letter-spacing: 2px;
+.board-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin-bottom: 20px;
 }
 
-.badge-red { background-color: #f92a54; }
-.badge-grey { background-color: #7a828e; }
-
-/* --- PAINEIS INFERIORES (Shipyard / Graveyard) --- */
-.bottom-panel {
-  display: flex;
-  align-items: center;
-  width: 100%;
-  margin-top: 30px;
-  gap: 20px;
-}
-
-.panel-title-vertical {
-  writing-mode: vertical-rl;
-  transform: rotate(180deg);
-  font-size: 11px;
+h1 {
+  font-size: 28px;
   font-weight: 800;
-  color: #9ca3af;
-  letter-spacing: 2px;
+  color: #111111;
 }
 
-/* Mockups das cápsulas no Shipyard */
-.shipyard-ships {
+.game-footer {
+  width: 100%;
+  padding: 40px 20px;
+  background-color: #111111; 
+  color: #ffffff; 
   display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+  justify-content: center;
+  position: relative;
 }
 
-.mock-ship {
-  height: 20px;
-  background-color: #d1d5db;
-  border-radius: 10px;
+.cheatsheet {
+  width: 100%;
+  max-width: 800px;
+  position: relative;
 }
 
-.size-4 { width: 100px; }
-.size-3 { width: 75px; }
-.size-2 { width: 50px; }
+.cheatsheet-title {
+  position: absolute;
+  top: -55px; 
+  left: 50%; 
+  transform: translateX(-50%); 
+  background: #ffffff;
+  color: #111111;
+  border: 3px solid #111111;
+  padding: 4px 20px;
+  border-radius: 20px;
+  font-weight: bold;
+  font-size: 14px;
+}
 
-/* Lista do Graveyard */
-.graveyard-list {
+.fleet-list {
   display: flex;
-  gap: 40px;
+  flex-direction: row; 
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+}
+
+.ship-item {
   font-size: 14px;
   font-weight: 600;
-  color: #4b5563;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px; 
 }
 
-.graveyard-col p {
-  margin: 8px 0;
+.ship-blocks {
+  background-color: #ffffff; 
+  border-radius: 12px;
 }
 
-.sunk-text {
-  color: #f92a54;
-  text-decoration: line-through;
+.game-timer {
+  position: absolute;
+  top: 100px;
+  background-color: #ffffff;
+  border: 3px solid #111111;
+  border-radius: 20px;
+  padding: 8px 24px;
+  font-weight: 800;
+  font-size: 16px;
+  box-shadow: 4px 4px 0px #111111;
+}
+
+.game-timer span {
+  color: #6b9cf2;
+  font-size: 18px;
+}
+
+.turn-indicator {
+  margin-top: 40px;
+  padding: 12px 32px;
+  border: 4px solid #111111;
+  border-radius: 12px;
+  background-color: #ffffff;
+  box-shadow: 6px 6px 0px #111111;
+  transition: all 0.3s ease;
+}
+
+.turn-indicator h2 {
+  font-size: 20px;
+  font-weight: 900;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.player-turn { background-color: #6b9cf2; color: #111111; }
+.enemy-turn { background-color: #f86e63; color: #111111; }
+
+.game-over-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
+}
+
+.game-over-modal {
+  width: 100%;
+  max-width: 450px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 40px;
+  
+  /* Mantém o padrão das outras telas */
+  background-color: #ffffff;
+  border: 4px solid #111111;
+  border-radius: 16px;
+  box-shadow: 10px 10px 0px #111111;
+  
+  transform: scale(1);
+  animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Título com sombra estilo HQ */
+.modal-title {
+  font-size: 48px;
+  font-weight: 900;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+}
+
+.text-blue { color: #6b9cf2; }
+.text-red { color: #f86e63; }
+
+.game-over-desc {
+  font-size: 18px;
+  font-weight: 700;
+  color: #111111;
+  margin-bottom: 24px;
+}
+
+.game-over-stats {
+  background-color: #f8f9fa;
+  border: 3px solid #111111;
+  border-radius: 8px;
+  padding: 16px 24px;
+  font-size: 18px;
+  color: #111111;
+  margin-bottom: 30px;
+}
+
+.game-over-btn {
+  width: 100%;
+  padding: 16px;
+  font-size: 18px;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes popIn {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.p6 { width: 140px; height: 26px; }
+.p4 { width: 95px; height: 26px; }
+.p3 { width: 70px; height: 26px; }
+.p1 { width: 26px; height: 26px; border-radius: 50%; }
+
+.dynamic-panel {
+  margin-top: 20px;
+  padding: 16px;
+  text-align: center;
+  border-width: 3px;
+}
+
+.dynamic-panel h3 {
+  font-size: 16px;
+  margin-bottom: 12px;
+}
+
+.dynamic-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.dynamic-controls select {
+  padding: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  border: 2px solid #111111;
+  border-radius: 6px;
+  width: 100%;
+}
+
+.dynamic-arrows {
+  display: flex;
+  gap: 8px;
+}
+
+.dynamic-arrows button {
+  background-color: #f8f9fa;
+  border: 2px solid #111111;
+  border-radius: 6px;
+  font-size: 20px;
+  padding: 8px 16px;
+  cursor: pointer;
+  box-shadow: 2px 2px 0px #111111;
+  transition: transform 0.1s;
+}
+
+.dynamic-arrows button:active:not(:disabled) {
+  transform: translate(2px, 2px);
+  box-shadow: 0px 0px 0px #111111;
+}
+
+.dynamic-arrows button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+.modal-campaign {
+  background-color: #ffffff;
 }
