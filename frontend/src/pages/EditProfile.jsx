@@ -1,9 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import './Auth.css'; 
 
-//INTEGRAR COM BACK
 export default function EditProfile() {
   const navigate = useNavigate();
   
@@ -11,10 +10,47 @@ export default function EditProfile() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
-  const handleUpdate = (e) => {
+  useEffect(() => {
+    const userStr = localStorage.getItem('loggedUser');
+    if (userStr) {
+      const user = JSON.parse(userStr);
+      setName(user.nome || '');
+      setUsername(user.login || '');
+    } else {
+      navigate('/login'); 
+    }
+  }, [navigate]);
+
+  const handleUpdate = async (e) => {
     e.preventDefault();
-    alert('Perfil atualizado com sucesso!');
-    navigate('/home');
+    
+    const userStr = localStorage.getItem('loggedUser');
+    if (!userStr) return;
+    const loggedUser = JSON.parse(userStr);
+
+    try {
+      const response = await fetch('http://localhost:3000/api/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          currentLogin: loggedUser.login, // O Backend precisa do login antigo para achar no banco
+          novoNome: name,
+          novoLogin: username,
+          novaSenha: password
+        })
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok) throw new Error(data.error || 'Erro ao atualizar o perfil');
+
+      localStorage.setItem('loggedUser', JSON.stringify(data.user));
+      
+      alert('Perfil atualizado com sucesso!');
+      navigate('/home');
+    } catch (error) {
+      alert(error.message);
+    }
   };
 
   return (
@@ -32,7 +68,8 @@ export default function EditProfile() {
                 type="text" 
                 value={name} 
                 onChange={(e) => setName(e.target.value)} 
-                placeholder="Seu nome real" 
+                placeholder="Seu nome" 
+                required
               />
             </div>
 
@@ -42,7 +79,8 @@ export default function EditProfile() {
                 type="text" 
                 value={username} 
                 onChange={(e) => setUsername(e.target.value)} 
-                placeholder="Nome de usuário" 
+                placeholder="Novo username" 
+                required
               />
             </div>
             
@@ -52,7 +90,7 @@ export default function EditProfile() {
                 type="password" 
                 value={password} 
                 onChange={(e) => setPassword(e.target.value)} 
-                placeholder="Deixe em branco para não alterar" 
+                placeholder="Nova senha" 
               />
             </div>
             

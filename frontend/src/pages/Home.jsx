@@ -15,29 +15,40 @@ export default function Home() {
     useEffect(() => {
         const userStr = localStorage.getItem('loggedUser');
         if (userStr) {
-        const user = JSON.parse(userStr);
-        setPlayerName(user.nome);
+            const localUser = JSON.parse(userStr);
 
-        if (user.estatisticas) {
-            setPlayerStats({
-            matches: user.estatisticas.partidas,
-            winRate: `${Math.round(user.estatisticas.taxaVitoria * 100)}%`,
-            lossRate: `${Math.round(user.estatisticas.taxaDerrota * 100)}%`
-            });
-        }
+            fetch(`http://localhost:3000/api/user/${localUser.login}`)
+                .then(res => res.json())
+                .then(user => {
+                    if (user.error) return; 
 
-        if (user.medalhas) {
-            setPlayerMedals({
-            almirante: user.medalhas.includes('Almirante'),
-            capitaoGuerra: user.medalhas.includes('Capitão de Mar e Guerra'),
-            capitao: user.medalhas.includes('Capitão'),
-            marinheiro: user.medalhas.includes('Marinheiro')
-            });
-        }
-        }
-    }, []);
+                    localStorage.setItem('loggedUser', JSON.stringify(user)); 
+                    
+                    setPlayerName(user.nome || user.login);
 
-    //salvar a dificuldade e o modo antes de ir para as regras
+                    if (user.estatisticas) {
+                        setPlayerStats({
+                            matches: user.estatisticas.partidas || 0,
+                            winRate: `${Math.round((user.estatisticas.taxaVitoria || 0) * 100)}%`,
+                            lossRate: `${Math.round((user.estatisticas.taxaDerrota || 0) * 100)}%`
+                        });
+                    }
+
+                    if (user.medalhas) {
+                        setPlayerMedals({
+                            almirante: user.medalhas.includes('Almirante'),
+                            capitaoGuerra: user.medalhas.includes('Capitão de Mar e Guerra'),
+                            capitao: user.medalhas.includes('Capitão'),
+                            marinheiro: user.medalhas.includes('Marinheiro')
+                        });
+                    }
+                })
+                .catch(err => console.error("Erro ao atualizar dados:", err));
+        } else {
+            navigate('/login');
+        }
+    }, [navigate]);
+
     const handlePlay = (modo, nivel) => {
         localStorage.setItem('aiLevel', nivel);
         navigate(`/rules/${modo}`);
@@ -50,7 +61,6 @@ export default function Home() {
         <main className="home-container">
             <div className="home-content">
             
-            {/* COLUNA ESQUERDA */}
             <section className="profile-section">
                 
                 <header className="welcome-header">
@@ -100,7 +110,6 @@ export default function Home() {
                     <span className="medal-name">Cap. de Guerra</span>
                     </div>
                     
-                    {/* Medalha Capitão */}
                     <div className={`medal-item ${playerMedals.capitao ? 'earned' : 'locked'}`}>
                     <div className="info-wrapper">
                         <span className="medal-info">i</span>
@@ -110,7 +119,6 @@ export default function Home() {
                     <span className="medal-name">Capitão</span>
                     </div>
                     
-                    {/* Medalha Marinheiro */}
                     <div className={`medal-item ${playerMedals.marinheiro ? 'earned' : 'locked'}`}>
                     <div className="info-wrapper">
                         <span className="medal-info">i</span>
@@ -124,7 +132,6 @@ export default function Home() {
                 </div>
             </section>
 
-            {/* COLUNA DIREITA */}
             <section className="play-section">
                 <div className="drawn-card mode-card campaign">
                 <h2>Modo Campanha</h2>

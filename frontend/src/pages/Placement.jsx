@@ -71,7 +71,12 @@ export default function Placement() {
       };
     });
 
-    const savedAiLevel = parseInt(localStorage.getItem('aiLevel')) || 1;
+    let currentAiLevel = 1;
+    if (mode === 'campanha') {
+      currentAiLevel = parseInt(localStorage.getItem('campaignStage')) || 1;
+    } else {
+      currentAiLevel = parseInt(localStorage.getItem('aiLevel')) || 1;
+    }
 
     try {
       const response = await fetch('http://localhost:3000/api/game/start', {
@@ -80,7 +85,7 @@ export default function Placement() {
         body: JSON.stringify({
           mode: 'IA',
           gameMode: mode,
-          aiLevel: savedAiLevel, 
+          aiLevel: currentAiLevel, 
           loginPlayer1: loggedUser.login,
           ships: shipsData
         })

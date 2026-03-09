@@ -43,4 +43,13 @@ export default class PlayerRepository {
     }
     return { id: player.id, login: player.login, nome: player.nome }; 
   }
+
+  update(playerAtualizado) {
+    const players = this.getAll();
+    const index = players.findIndex(p => p.id === playerAtualizado.id);
+    if (index !== -1) {
+      players[index] = playerAtualizado;
+      this.saveAll(players);
+    }
+  }
 }

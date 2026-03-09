@@ -3,13 +3,13 @@
     "id": "1773027912404",
     "login": "baracholeticia",
     "nome": "leticia",
-    "senha": "12345678",
+    "senha": "1234",
     "estatisticas": {
-      "partidas": 0,
+      "partidas": 2,
       "vitorias": 0,
-      "derrotas": 0,
+      "derrotas": 2,
       "taxaVitoria": 0,
-      "taxaDerrota": 0
+      "taxaDerrota": 1
     },
     "medalhas": []
   },
