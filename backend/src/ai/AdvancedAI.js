@@ -1,7 +1,7 @@
 import BaseAI from './BaseAI.js';
     export default class AdvancedAI extends BaseAI {
-        constructor() {
-            super("advanced-ai");
+        constructor(id, name) {
+            super(id, name, "advanced");
         }
        
         getBestMove(opponentBoard) {
